@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">商米网页桥接</string>
+
+    <string name="setup_title">连接网页应用</string>
+    <string name="setup_subtitle">网页全屏打开后，可通过 window.PosBridge 调用本机的扫码和打印。</string>
+    <string name="hint_start_url">起始网址</string>
+    <string name="hint_home_url">主页网址（可选）</string>
+    <string name="action_open">打开</string>
+    <string name="action_open_demo">打开内置演示页</string>
+    <string name="action_home">主页</string>
+    <string name="action_settings">设置</string>
+    <string name="action_retry">重试</string>
+
+    <string name="device_status">打印机：%1$s · 扫码应用：%2$s</string>
+    <string name="status_available">可用</string>
+    <string name="status_unavailable">未找到</string>
+
+    <string name="error_invalid_url">请输入有效的 http(s) 网址</string>
+    <string name="offline_message">网络未连接</string>
+    <string name="press_back_again">再按一次返回键退出</string>
+</resources>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Store back-office web apps are often served over plain HTTP on the local network
+  (for example http://192.168.1.20:8080), so cleartext traffic is allowed.
+  If your web app is HTTPS-only, set cleartextTrafficPermitted to false.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

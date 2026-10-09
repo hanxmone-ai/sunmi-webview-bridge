@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>PosBridge demo</title>
+  <style>
+    :root {
+      --bg: #f6f7f9; --card: #ffffff; --text: #111827; --muted: #6b7280;
+      --line: #e5e7eb; --brand: #0f766e; --brand-ink: #ffffff; --ok: #15803d; --err: #b91c1c;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #0b0f14; --card: #151b23; --text: #e5e7eb; --muted: #9ca3af;
+              --line: #253041; --brand: #14b8a6; --brand-ink: #04211e; --ok: #4ade80; --err: #f87171; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+           background: var(--bg); color: var(--text); }
+    main { max-width: 720px; margin: 0 auto; padding: 20px 16px 40px; }
+    h1 { font-size: 22px; margin: 0 0 4px; }
+    .sub { color: var(--muted); margin: 0 0 20px; font-size: 14px; }
+    .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 13px;
+             border: 1px solid var(--line); background: var(--card); }
+    .badge.ok { color: var(--ok); } .badge.err { color: var(--err); }
+    section { background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+              padding: 16px; margin-top: 16px; }
+    h2 { font-size: 15px; margin: 0 0 12px; }
+    label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    input, select { width: 100%; font: inherit; padding: 10px 12px; border-radius: 8px;
+                    border: 1px solid var(--line); background: var(--bg); color: var(--text); }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    button { font: inherit; font-weight: 600; padding: 10px 16px; border-radius: 8px; border: 0;
+             background: var(--brand); color: var(--brand-ink); min-height: 44px; flex: 1 1 140px; }
+    button.secondary { background: transparent; color: var(--brand); border: 1px solid var(--brand); }
+    pre { margin: 0; white-space: pre-wrap; word-break: break-all; font-size: 13px; max-height: 260px;
+          overflow: auto; color: var(--muted); }
+  </style>
+</head>
+<body>
+<main>
+  <h1>PosBridge demo</h1>
+  <p class="sub">Calls the Sunmi scanner and printer from a web page. <span id="mode" class="badge">checking…</span></p>
+
+  <section>
+    <h2>1 · Scan</h2>
+    <button id="btn-scan">Scan a code</button>
+  </section>
+
+  <section>
+    <h2>2 · Print</h2>
+    <label for="content">Content</label>
+    <input id="content" value="SKU-2026-0001" autocomplete="off">
+    <div class="row">
+      <button id="btn-barcode">Barcode</button>
+      <button id="btn-qr">QR code</button>
+      <button id="btn-text" class="secondary">Text</button>
+    </div>
+    <div class="row">
+      <button id="btn-status" class="secondary">Printer status</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Log</h2>
+    <pre id="log"></pre>
+  </section>
+</main>
+
+<script>
+  (function () {
+    var bridge = window.PosBridge;
+    var hasBridge = !!(bridge && bridge.isReady && bridge.isReady());
+    var mode = document.getElementById('mode');
+    mode.textContent = hasBridge ? 'bridge connected' : 'browser preview (no bridge)';
+    mode.className = 'badge ' + (hasBridge ? 'ok' : 'err');
+
+    function log(label, value) {
+      var line = new Date().toLocaleTimeString() + '  ' + label + '  ' +
+        (typeof value === 'string' ? value : JSON.stringify(value));
+      var el = document.getElementById('log');
+      el.textContent = line + '\n' + el.textContent;
+    }
+
+    function call(name, args) {
+      if (!hasBridge) { log('preview', 'PosBridge.' + name + '(' + args.map(JSON.stringify).join(', ') + ')'); return; }
+      bridge[name].apply(bridge, args);
+    }
+
+    // Callbacks the app invokes with JSON objects.
+    window.onPosScanResult = function (result) {
+      log('scan', result);
+      if (result.ok && result.results.length) {
+        document.getElementById('content').value = result.results[0].value;
+      }
+    };
+    window.onPosPrintResult = function (result) { log('print', result); };
+
+    function content() { return document.getElementById('content').value; }
+    document.getElementById('btn-scan').onclick = function () { call('scan', []); };
+    document.getElementById('btn-barcode').onclick = function () { call('printBarcode', [content()]); };
+    document.getElementById('btn-qr').onclick = function () { call('printQrCode', [content()]); };
+    document.getElementById('btn-text').onclick = function () { call('printText', [content(), 28, true, 'center']); };
+    document.getElementById('btn-status').onclick = function () {
+      if (!hasBridge) { log('preview', 'PosBridge.getPrinterStatus()'); return; }
+      log('status', JSON.parse(bridge.getPrinterStatus()));
+    };
+  })();
+</script>
+</body>
+</html>
